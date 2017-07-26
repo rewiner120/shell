@@ -1,0 +1,161 @@
+yum install zlib libxml libjpeg freetype libpng gd curl libiconv zlib-devel libxml2-devel libjpeg-devel freetype-devel libpng-devel gd-devel curl-devel curl libxml2 libxml2-devel libmcrypt libmcrypt-devel libxslt* ncurses-devel openssl openssl-devel pcre pcre-devel gcc gcc-c++ dtrace systemtap-sdt-devel make cmake -y
+
+
+
+
+=====================================
+
+========================================
+cmake \
+-DCMAKE_INSTALL_PREFIX=/usr/local/mysql \
+-DMYSQL_DATADIR=/usr/local/mysql/data \
+-DSYSCONFDIR=/etc \
+-DWITH_INNOBASE_STORAGE_ENGINE=1 \
+-DWITH_ARCHIVE_STORAGE_ENGINE=1 \
+-DWITH_BLACKHOLE_STORAGE_ENGINE=1 \
+-DWITH_PARTITION_STORAGE_ENGINE=1 \
+-DWITH_PERFSCHEMA_STORAGE_ENGINE=1 \
+-DWITHOUT_EXAMPLE_STORAGE_ENGINE=1 \
+-DWITHOUT_FEDERATED_STORAGE_ENGINE=1 \
+-DWITH_SSL=system \
+-DWITH_ZLIB=system \
+-DWITH_READLINE=1 \
+-DENABLE_DTRACE=1  \
+-DWITH_DEBUG=0 \
+-DDEFAULT_CHARSET=utf8 \
+-DDEFAULT_COLLATION=utf8_general_ci \
+-DWITH_EXTRA_CHARSETS=all \
+-DENABLED_LOCAL_INFILE=1 \
+-DMYSQL_UNIX_ADDR=/usr/local/mysql/mysql.sock \
+-DMYSQL_TCP_PORT=3306 \
+-DCOMPILATION_COMMENT="lq-edition" \
+-DMYSQL_USER=mysql 
+
+
+
+
+
+=================================MySQL=====================================
+wget http://mirrors.sohu.com/mysql/MySQL-5.5/mysql-5.5.52.tar.gz
+
+ yum install ncurses ncurses-devel -y  
+
+
+./configure \
+--prefix=/usr/local/mysql \
+--with-unix-socket-path=/usr/local/mysql/tmp/mysql.sock \
+--localstatedir=/usr/local/mysql/data \
+--enable-assembler \
+--enable-thread-safe-client \
+--with-mysqld-user=mysql \
+--with-big-tables \
+--without-debug \
+--with-pthread \
+--with-extra-charsets=complex \
+--with-readline \
+--with-ssl \
+--with-embedded-server \
+--enable-local-infile \
+--with-plugins=partition,innobase \
+--with-plugin-PLUGIN \
+--with-mysqld-ldflags=-all-static \
+--with-client-ldflags=-all-static
+
+-----------------
+echo $
+make && make install
+echo $
+ls -l
+cp support-files/my-huge.cnf /etc/my.cnf
+cd /usr/local/mysql
+chown -R mysql.mysql .
+ls -l
+cd -
+ls -l
+/usr/local/mysql/bin/mysql_install_db --user=mysql
+echo $PATH
+ls -l
+cp support-files/mysql.server /etc/init.d/mysqld 
+============================================================================
+下载5.5.52
+
+
+groupadd mysql //新建用户组
+useradd –r –g mysql –s /bin/false mysql //新建mysql用户 注意-s /bin/false 表示不给该用户登录系统的权限	useradd nginx -s /sbin/nologin -M
+cd /usr/local //进入mysql安装目录，这里我们把mysql安装在 /usr/local目录下
+tar –zxvf mysql-5.5.47-linux2.6-i686.tar.gz // 解压软件
+mv mysql-5.5.47-linux2.6-i686 mysql //更名为mysql
+cd mysql
+chown -R mysql . //更改mysql目录下的所有文件的所属用户为mysql （注意最后是一个点，表示当前目录）
+chgrp -R mysql . //更改mysql 目录下的所有文件的所属组为mysql （注意最后是一个点，表示当前目录）
+scripts/mysql_install_db --user=mysql //安装数据库
+chown -R root . //更改所有文件的用户为root （注意最后是一个点，表示当前目录）
+chown -R mysql data //更改data目录的所属用户为mysql
+cp support-files/my-huge.cnf /etc/my.cnf //mysql的配置文件
+
+
+====================================MySQL 优化=============================
+cmake \
+-DCMAKE_INSTALL_PREFIX=/application/mysql-5.6.36 \
+-DMYSQL_DATADIR=/application/mysql-5.6.36/data \
+-DWITH_INNOBASE_STORAGE_ENGINE=1 \
+-DWITH_ARCHIVE_STORAGE_ENGINE=1 \
+-DWITH_BLACKHOLE_STORAGE_ENGINE=1 \
+-DWITH_PARTITION_STORAGE_ENGINE=1 \
+-DWITH_PERFSCHEMA_STORAGE_ENGINE=1 \
+-DWITH_FEDERATED_STORAGE_ENGINE=1 \
+-DWITH_MEMORY_STORAGE_ENGINE=1 \
+-DWITH_READLINE=1 \
+-DMYSQL_UNIX_ADDR=/tmp/mysql.sock \
+-DMYSQL_TCP_PORT=3306 \
+-DENABLED_LOCAL_INFILE=1 \
+-DEXTRA_CHARSETS=all \
+-DDEFAULT_CHARSET=utf8 \
+-DDEFAULT_COLLATION=utf8_general_ci
+
+
+
+
+cmake \
+-DCMAKE_INSTALL_PREFIX=/usr/local/mysql \
+-DMYSQL_DATADIR=/usr/local/mysql/data \
+-DSYSCONFDIR=/etc \
+-DWITH_MYISAM_STORAGE_ENGINE=1 \
+-DWITH_INNOBASE_STORAGE_ENGINE=1 \
+-DWITH_MEMORY_STORAGE_ENGINE=1 \
+-DWITH_READLINE=1 \
+-DMYSQL_UNIX_ADDR=/tmp/mysql.sock \
+-DMYSQL_TCP_PORT=3306 \
+-DENABLED_LOCAL_INFILE=1 \
+-DWITH_PARTITION_STORAGE_ENGINE=1 \
+-DEXTRA_CHARSETS=all \
+-DDEFAULT_CHARSET=utf8 \
+-DDEFAULT_COLLATION=utf8_general_ci
+
+
+---------5.7版本安装-------------
+cmake \
+-DCMAKE_INSTALL_PREFIX=/application/mysql-5.7.17 \
+-DMYSQL_DATADIR=/application/mysql-5.7.17/data \
+-DWITH_INNOBASE_STORAGE_ENGINE=1 \
+-DWITH_ARCHIVE_STORAGE_ENGINE=1 \
+-DWITH_BLACKHOLE_STORAGE_ENGINE=1 \
+-DWITH_PARTITION_STORAGE_ENGINE=1 \
+-DWITH_PERFSCHEMA_STORAGE_ENGINE=1 \
+-DWITH_FEDERATED_STORAGE_ENGINE=1 \
+-DWITH_MEMORY_STORAGE_ENGINE=1 \
+-DWITH_READLINE=1 \
+-DMYSQL_UNIX_ADDR=/tmp/mysql.sock \
+-DMYSQL_TCP_PORT=3306 \
+-DENABLED_LOCAL_INFILE=1 \
+-DEXTRA_CHARSETS=all \
+-DDEFAULT_CHARSET=utf8 \
+-DDEFAULT_COLLATION=utf8_general_ci \
+-DDOWNLOAD_BOOST=1 \
+-DWITH_BOOST=/usr/local/boost
+
+
+==========如果初始化出现以下错误信息===========
+COLLATION 'latin1_swedish_ci' is not valid for CHARACTER SET 'utf8'
+解决办法:
+./scripts/mysql_install_db --user=mysql --collation-server=utf8_general_ci

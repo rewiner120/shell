@@ -1,0 +1,101 @@
+[client]
+port            = 3306
+socket          = /tmp/mysql.sock
+[mysqld]
+port            = 3306
+socket          = /tmp/mysql.sock
+character-set-server = utf8
+basedir = /usr/local/mysql
+datadir = /usr/local/mysql/data
+server-id = 1
+
+# connection #
+skip-name-resolve
+back_log = 512
+max_connections = 3000
+max_connect_errors = 100000
+wait_timeout = 1800
+
+# table cache performance settings
+table_open_cache = 4096
+
+# session memory settings #
+read_buffer_size = 16M
+read_rnd_buffer_size = 64M
+sort_buffer_size = 32M
+join_buffer_size = 128M
+thread_cache_size = 64
+thread_concurrency = 16
+tmp_table_size = 64M
+max_heap_table_size = 64M
+
+
+# log settings #
+log-bin=mysql-bin
+slow_query_log
+long_query_time = 2
+expire_logs_days = 90
+binlog_cache_size = 4M 
+
+# innodb settings #
+innodb_autoinc_lock_mode = 2
+innodb_additional_mem_pool_size = 64M
+innodb_buffer_pool_size = 5G
+innodb_data_file_path = ibdata1:10M:autoextend
+innodb_file_per_table = 1
+innodb_flush_log_at_trx_commit = 1
+innodb_file_format = Barracuda
+innodb_file_format_max = Barracuda
+innodb_log_buffer_size = 16M
+innodb_log_file_size = 512M
+innodb_log_files_in_group = 3
+innodb_lock_wait_timeout = 120
+innodb_large_prefix = 1
+innodb_max_dirty_pages_pct = 90
+innodb_open_files=4096
+innodb_online_alter_log_max_size=1G
+innodb_sort_buffer_size = 67108864
+innodb_strict_mode = 1
+innodb_write_io_threads = 8
+innodb_read_io_threads = 8
+innodb_thread_concurrency = 16
+
+# replication settings #
+master_info_repository = TABLE
+relay_log_info_repository = TABLE
+relay_log_recovery = 1
+binlog_format=ROW
+sync_binlog = 1
+#gtid_mode = on	#开启GTID复制所必须得参数
+#enforce_gtid_consistency = 1	#开启GTID复制所必须得参数
+log_slave_updates
+relay_log = relay.log
+relay_log_recovery = 1
+
+# other settings #
+query_cache_size = 128M
+query_cache_limit = 4M
+ft_min_word_len = 8
+default-storage-engine = InnoDB
+transaction_isolation = REPEATABLE-READ
+key_buffer_size = 128M
+bulk_insert_buffer_size = 256M
+myisam_sort_buffer_size = 256M
+myisam_max_sort_file_size = 5G
+myisam_repair_threads = 1
+myisam_recover
+
+[mysqldump]
+quick
+max_allowed_packet = 32M
+[mysql]
+no-auto-rehash
+[myisamchk]
+key_buffer_size = 2048M
+sort_buffer_size = 2048M
+read_buffer = 32M
+write_buffer = 32M
+[mysqlhotcopy]
+interactive-timeout
+[mysqld_safe]
+open-files-limit = 8192
