@@ -1,0 +1,60 @@
+=======主从报错跳过=======
+stop slave;
+set global sql_slave_skip_counter = 1;
+start slave;
+
+stop slave;
+set session gtid_next='xxxxxxx:N';    这里的xxxxx:N 也就是你的slave sql thread报错的GTID，或者说是你想要跳过的GTID。
+begin;commit;
+set gtid_next='AUTOMAIC';
+start slave;
+=========每秒对Queries,Thread_connected,Thread_running进行统计=========
+mysqladmin ext -uroot -pxxxx -i1 |awk '/Queries/{q=$4} /Threads_connected/{tc=$4} /Threads_running/{printf "%5d %5d %5d\n",q,tc,$4}'
+=======pt工具集============================================================
+如果报错Time错误安装扩展：yum -y  install perl-Time-HiRes perl-DBI perl-DBD-MySQL
+
+在从上执行下面检验主从不一致的地方：（主：192.168.60.128；从库：192.168.60.129）
+pt-table-checksum --nocheck-replication-filters --no-check-binlog-format --databases=test --replicate=test.checksums --host=192.168.60.128 --port=3306 --user=root --password=123456
+
+根据检验结果只修复从库192.168.60.129主从不一致的地方：
+pt-table-sync --print --replicate test.checksums --sync-to-master h=192.168.60.129,p=root,u=root
+注：由于pt-table-sync每次只能修复一个表，所以如果修复的是父表，则可能导致子表数据连带被修复，这可能会修复一个不一致而引入另一个不一致；如果表上有触发器，也可能遇到同样问题。
+所以在有触发器和主外键约束的情况下要慎用。修复不一致原理，是在主上执行相应的修改语句如delete,insert，replace into等，再同步到从库完成修改达到一致。
+=====================================================================
+使用dsn跨数据中心检测
+场景：
+非标准端口13306，只检查以 d_ts 开头的所有库
+一主二从，binlog是ROW模式，其中一从在阿里云ECS上，主库是无法直接访问该从库的
+检测用的账号因为不是%，所以不一样
+-----
+以下是我环境的情况MASTER_HOST:13306 主库
+REPLICA_HOST:3306 从库
+PTCHECK_HOST pt-table-checksum所在服务器
+DSN_DBHOST，记录从库（连接）dsns的数据库
+
+最优的方式就是dsn指定从库了。在从库或从库同网段主机里装上 percona-toolkit。
+在DSN_DBHOST 数据库实例上创建DSNs表：
+create database percona;
+CREATE TABLE `percona`.`dsns` (
+`id` int(11) NOT NULL AUTO_INCREMENT,
+`parent_id` int(11) DEFAULT NULL,
+`dsn` varchar(255) NOT NULL,
+PRIMARY KEY (`id`)
+);
+
+GRANT ALL PRIVILEGEES on percona.* to percona_tk@'PTCHECK_HOST' IDENTIFIED BY 'percona_pass';
+如果有多个实例要检查，可以创建多个类似的dsns表。上面的percona_tk用户只是用来访问dsn库。插入从库信息：
+
+use percona;
+insert into dsns(dsn) values('h=REPLICA_HOST,P=3306,u=repl_user,p=repl_pass');
+DSNs记录 dsn 列格式如 h=REPLICA_HOST,u=repl_user,p=repl_pass
+
+在 PTCHECK_HOST 上执行检查命令：
+
+# pt-table-checksum --replicate=percona.checksums --nocheck-replication-filters --no-check-binlog-format \
+h=MASTER_HOST,u=repl_user,p='repl_pass',P=13306 --databases-regex=d_ts.* \
+--recursion-method dsn=h=DSN_DBHOST,u=percona_tk,p='percona_pass',P=3306,D=percona,t=dsn
+========================================================================
+1、pt-online-change-schema的时候一定要制定--charset=字符集   否则更改后会有乱码产生
+2、pt-online-change-schema在从库上执行的时候，如果主库binlog格式为ROW模式，则PT原理产生的触发器不会工作，导致数据不一致。因此慎用！但在主上执行则没有此问题。
+========================================================================
