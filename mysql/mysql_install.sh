@@ -31,7 +31,7 @@ fi
 cd ${source_path}
 
 id mysql
-if [ $? -nq 0 ];then
+if [ $? -ne 0 ];then
     echo "创建用户   ${user_name}，请稍后。。。。"
     useradd ${user_name} -s /sbin/nologin -M
     if [ $? -eq 0 ];then
