@@ -6,7 +6,7 @@ start slave;
 stop slave;
 set session gtid_next='xxxxxxx:N';    这里的xxxxx:N 也就是你的slave sql thread报错的GTID，或者说是你想要跳过的GTID。
 begin;commit;
-set gtid_next='AUTOMAIC';
+set gtid_next='AUTOMATIC';
 start slave;
 =========每秒对Queries,Thread_connected,Thread_running进行统计=========
 mysqladmin ext -uroot -pxxxx -i1 |awk '/Queries/{q=$4} /Threads_connected/{tc=$4} /Threads_running/{printf "%5d %5d %5d\n",q,tc,$4}'

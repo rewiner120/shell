@@ -135,8 +135,8 @@ cmake \
 
 ---------5.7版本安装-------------
 cmake \
--DCMAKE_INSTALL_PREFIX=/application/mysql-5.7.17 \
--DMYSQL_DATADIR=/application/mysql-5.7.17/data \
+-DCMAKE_INSTALL_PREFIX=/usr/local/mysql-5.7.17 \
+-DMYSQL_DATADIR=/usr/local/mysql-5.7.17/data \
 -DWITH_INNOBASE_STORAGE_ENGINE=1 \
 -DWITH_ARCHIVE_STORAGE_ENGINE=1 \
 -DWITH_BLACKHOLE_STORAGE_ENGINE=1 \
