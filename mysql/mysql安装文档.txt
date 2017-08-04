@@ -152,7 +152,8 @@ cmake \
 -DDEFAULT_CHARSET=utf8 \
 -DDEFAULT_COLLATION=utf8_general_ci \
 -DDOWNLOAD_BOOST=1 \
--DWITH_BOOST=/usr/local/boost
+-DWITH_BOOST=/usr/local/boost \
+-DDOWNLOAD_BOOST_TIMEOUT=28800
 
 
 ==========如果初始化出现以下错误信息===========
