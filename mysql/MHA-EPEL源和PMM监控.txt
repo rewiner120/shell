@@ -1,4 +1,4 @@
-yum -y install http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
+﻿yum -y install http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
 
 然后运行
 yum makecache
@@ -6,7 +6,7 @@ yum makecache
 ===========PMM监控安装===============
 1、服务端安装:
 检查内核版本大于2.6.32
-安装docker:   yum install docker_io -y
+安装docker:   yum install docker-io -y
 创建PMM容器：    
 docker create \
    -v /opt/prometheus/data \

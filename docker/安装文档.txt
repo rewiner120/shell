@@ -1,0 +1,16 @@
+Docker支持以下的CentOS版本：
+CentOS 7 (64-bit)
+CentOS 6.5 (64-bit) 或更高的版本
+
+前提条件:
+
+Docker 运行在 CentOS 7 上，要求系统为64位、系统内核版本为 3.10 以上。
+Docker 运行在 CentOS-6.5 或更高的版本的 CentOS 上，要求系统为64位、系统内核版本为 2.6.32-431 或者更高版本。
+
+安装：
+1、安装EPEL源：
+yum -y install http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
+然后运行
+yum makecache
+2、安装docker-io
+yum install -y docker-io
