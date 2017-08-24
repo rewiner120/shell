@@ -1,0 +1,32 @@
+Docker支持以下的CentOS版本：
+CentOS 7 (64-bit)
+CentOS 6.5 (64-bit) 或更高的版本
+
+前提条件:
+
+Docker 运行在 CentOS 7 上，要求系统为64位、系统内核版本为 3.10 以上。
+Docker 运行在 CentOS-6.5 或更高的版本的 CentOS 上，要求系统为64位、系统内核版本为 2.6.32-431 或者更高版本。
+
+安装：
+1、安装EPEL源：
+yum -y install http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
+然后运行
+yum makecache
+2、安装docker-io
+yum install -y docker-io
+
+
+常用命令：
+1、更改国内阿里镜像修改文件/etc/docker/daemon.json
+{
+  "registry-mirrors": ["https://j56jlnyl.mirror.aliyuncs.com"]
+}
+
+2、docker pull 拉去镜像
+3、docker run -d -P 33066:3306 -v /root/slave:/etc/mysql/conf.d mysql:5.6
+    -d 后台运行
+    -P 端口映射，把宿主机33066端口映射到docker容器的3306端口
+    -v 文件映射  把/root/slave下的my.cnf 映射到docker容器 /etc/mysql/conf.d/下的my.cnf
+4、docker ps -as 查看容器及大小
+5、docker rm 容器ID 删除容器
+6、docker insepect 容器ID      查看容器的相关配置，诸如IP地址，端口映射信息等。
