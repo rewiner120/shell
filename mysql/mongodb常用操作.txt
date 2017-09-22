@@ -1,0 +1,76 @@
+数据库操作：
+创建数据库：use NewKu;      //创建NewKu
+查看当前库：db     //查看当前库
+查看所有库：show dbs;    //查看所有库
+删除数据库：use NewKu;  //进入目标库.    db.dropDatabase();  //删除目标库
+
+
+集合操作：
+
+
+创建集合：db.createCollection("log", {capped:true, max:50000000});    //创建名为log 限制集合数目为5000万，超过自动覆盖
+
+删除集合：db.log.drop();      //删除log集合（表）;
+查看集合：show tables;
+
+文档操作：
+查看文档：db.mycol.find().pretty()   //查看集合mycol的文档
+插入文档：db.COLLECTION_NAME.insert(document);   //向集合COLLECTION_NAME插入文档document
+更新文档：db.COLLECTION_NAME.update(SELECTION_CRITERIA, UPDATED_DATA);   //更新COLLECTION_NAME集合
+删除文档：db.mycol.remove({'_id':100});   //删除集合mycol中ID为100的文档
+
+索引操作:
+
+创建索引：db.log.ensureIndex({"content.url":1});   //在表log 上创建 content.url的索引
+          db.log.ensureIndex({"time":-1});   //在集合log 上穿件time的倒序索引
+删除索引：db.log.dropIndex({"content.url":1});   //删除表log上content.url的索引
+
+
+用户相关：
+
+进入目标库：use admin;   //进入目标库
+创建用户并授权：db.createUser({user:'root',pwd:'root',roles:[{ "role" : "root", "db" : "admin" }]});   //创建库admin的root账户 
+普通用户并授权：
+    use fenxi;   //进入fenxi库
+    db.createUser({user:'fenxi',pwd:'KJjs(8jsj&',roles:[{ "role" : "readWrite", "db" : "fenxi" }]});   //在库fenxi里创建用户fenxi并且拥有读写权限
+    
+先创建后授权：
+    use test;     //进入test库
+    db.createUser({user:'Larry',pwd:'KJjs(8jsj&'});       //在test库创建名为Larry的用户
+
+查看用户：
+    use test;     //进入目标库
+    show users;    //查看用户
+修改密码：   db.changeUserPassword('testuser','testPWD');    //修改用户testuser的密码
+删除用户：use test;  //进入目标库         db.dropUser("testuser");   //删除用户testuser
+    
+权限相关：
+
+授权：use test;   //进入test库。   db.grantRolesToUser(  "testuser",[{ role: "read",db:"admin"}]);   //授予用户testuser在库admin上的读权限
+回收：use test;   //进入test库。   db.revokeRolesFromUser("testuser",[{ role: "read",db:"admin"}]);   //回收用户testuser在库admin上的读权限       
+    
+roles:
+    1. 数据库用户角色：read、readWrite;
+    2. 数据库管理角色：dbAdmin、dbOwner、userAdmin；
+    3. 集群管理角色：clusterAdmin、clusterManager、clusterMonitor、hostManager；
+    4. 备份恢复角色：backup、restore；
+    5. 所有数据库角色：readAnyDatabase、readWriteAnyDatabase、userAdminAnyDatabase、dbAdminAnyDatabase
+    6. 超级用户角色：root  
+    // 这里还有几个角色间接或直接提供了系统超级用户的访问（dbOwner 、userAdmin、userAdminAnyDatabase）
+
+    
+备份恢复相关：
+
+备份：./bin/mongodump     //客户端会连接到ip为 127.0.0.1 端口号为 27017 的MongoDB服务上，并备份所有数据到 bin/dump/ 目录中
+备份制定库：  mongodump -h dbhost -d dbname -o dbdirectory    //备份服务器dbhost的dbname库到 dbdirectory路径下
+备份制定表：  mongodump --collection COLLECTION_NAME --db DB_NAME     //备份DB_NAME下的 COLLECTION_NAME集合。
+              mongoexport -h dbhost -d dbname -c collection_name -f collectionKey -o dbdirectory
+
+恢复：mongorestore -h <hostname><:port> -d dbname <path>
+        mongorestore -h 10.10.2.147:27017 -d test /data/backup/2017     //从备份路径/data/backup/2017 恢复10.10.2.147:27017的test库
+
+
+mongodb
+DB:meilele_log_fenxi
+user:logfenxi
+pwd:9C1Xh(86%E7DFe
