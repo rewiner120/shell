@@ -8,6 +8,31 @@ set session gtid_next='xxxxxxx:N';    这里的xxxxx:N 也就是你的slave sql thread报
 begin;commit;
 set gtid_next='AUTOMATIC';
 start slave;
+============5.7 MGR配置流程==============
+一、单主模式：
+主:
+SET SQL_LOG_BIN=0;
+CREATE USER rpl_user@'%' IDENTIFIED BY 'password';
+GRANT REPLICATION SLAVE ON *.* TO rpl_user@'%';
+FLUSH PRIVILEGES;
+SET SQL_LOG_BIN=1;
+CHANGE MASTER TO MASTER_USER='rpl_user', MASTER_PASSWORD='password' FOR CHANNEL 'group_replication_recovery';
+INSTALL PLUGIN group_replication SONAME 'group_replication.so';
+SET GLOBAL group_replication_bootstrap_group=ON;
+START GROUP_REPLICATION;
+SET GLOBAL group_replication_bootstrap_group=OFF;
+从：
+SET SQL_LOG_BIN=0;
+CREATE USER rpl_user@'%' IDENTIFIED BY 'password';
+GRANT REPLICATION SLAVE ON *.* TO rpl_user@'%';
+FLUSH PRIVILEGES;
+SET SQL_LOG_BIN=1;
+CHANGE MASTER TO MASTER_USER='rpl_user', MASTER_PASSWORD='password' FOR CHANNEL 'group_replication_recovery';
+INSTALL PLUGIN group_replication SONAME 'group_replication.so';
+START GROUP_REPLICATION;
+比主少了倒数1和3这2个步骤！
+
+
 =========每秒对Queries,Thread_connected,Thread_running进行统计=========
 mysqladmin ext -uroot -pxxxx -i1 |awk '/Queries/{q=$4} /Threads_connected/{tc=$4} /Threads_running/{printf "%5d %5d %5d\n",q,tc,$4}'
 =======pt工具集============================================================
@@ -58,3 +83,48 @@ h=MASTER_HOST,u=repl_user,p='repl_pass',P=13306 --databases-regex=d_ts.* \
 1、pt-online-change-schema的时候一定要制定--charset=字符集   否则更改后会有乱码产生
 2、pt-online-change-schema在从库上执行的时候，如果主库binlog格式为ROW模式，则PT原理产生的触发器不会工作，导致数据不一致。因此慎用！但在主上执行则没有此问题。
 ========================================================================
+查看事务锁语句：
+
+SELECT
+	r.trx_state wating_trx_state,
+	r.trx_id waiting_trx_id,
+	r.trx_mysql_thread_Id waiting_thread,
+	r.trx_query waiting_query,
+	b.trx_state blocking_trx_state,
+	b.trx_id blocking_trx_id,
+	b.trx_mysql_thread_id blocking_thread,
+	b.trx_query blocking_query
+FROM
+	information_schema.innodb_lock_waits w
+INNER JOIN information_schema.innodb_trx b ON b.trx_id = w.blocking_trx_id
+INNER JOIN information_schema.innodb_trx r ON r.trx_id = w.requesting_trx_id;
+
+-- 更详细的锁相关数据
+SELECT
+     b.trx_state,
+     e.state,
+     e.time,
+     d.state AS block_state,
+     d.time AS block_time,
+     a.requesting_trx_id,
+     a.requested_lock_id,
+     b.trx_query,
+     b.trx_mysql_thread_id,
+     a.blocking_trx_id,
+     a.blocking_lock_id,
+     c.trx_query AS block_trx_query,
+     c.trx_mysql_thread_id AS block_trx_mysql_tread_id
+FROM
+     information_schema.INNODB_LOCK_WAITS a
+LEFT JOIN information_schema.INNODB_TRX b ON a.requesting_trx_id = b.trx_id
+LEFT JOIN information_schema.INNODB_TRX c ON a.blocking_trx_id = c.trx_id
+LEFT JOIN information_schema.PROCESSLIST d ON c.trx_mysql_thread_id = d.id
+LEFT JOIN information_schema.PROCESSLIST e ON b.trx_mysql_thread_id = e.id
+ORDER BY
+     a.requesting_trx_id;
+
+
+
+
+
+

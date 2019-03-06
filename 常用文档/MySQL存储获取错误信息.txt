@@ -1,0 +1,18 @@
+#MySQL获取报错信息,一般用于存储过程事务控制
+#MySQL 5.6 开始提供 GET DIAGNOSTICS CONDITION 1
+
+#示例存储过程
+create PROCEDURE aaa()
+begin
+DECLARE code CHAR(5) DEFAULT '00000';
+DECLARE msg TEXT;
+declare pout double;
+DECLARE continue HANDLER FOR SQLEXCEPTION
+    BEGIN
+      GET DIAGNOSTICS CONDITION 1 
+        code = RETURNED_SQLSTATE, msg = MESSAGE_TEXT;
+    END;
+/*set pout= 1/0;*/
+select 1/0 into pout from test.ttt ; 
+select concat(code,msg) ;
+end

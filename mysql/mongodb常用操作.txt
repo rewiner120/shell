@@ -25,6 +25,8 @@
           db.log.ensureIndex({"time":-1});   //在集合log 上穿件time的倒序索引
 删除索引：db.log.dropIndex({"content.url":1});   //删除表log上content.url的索引
 
+查看索引：db.log.getIndexes();	//查看文档log上的索引
+
 
 用户相关：
 
@@ -46,7 +48,7 @@
     
 权限相关：
 
-授权：use test;   //进入test库。   db.grantRolesToUser(  "testuser",[{ role: "read",db:"admin"}]);   //授予用户testuser在库admin上的读权限
+授权：use test;   //进入test库。   db.grantRolesToUser("testuser",[{ role: "read",db:"admin"}]);   //授予用户testuser在库admin上的读权限
 回收：use test;   //进入test库。   db.revokeRolesFromUser("testuser",[{ role: "read",db:"admin"}]);   //回收用户testuser在库admin上的读权限       
     
 roles:

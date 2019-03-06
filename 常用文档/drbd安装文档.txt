@@ -1,0 +1,108 @@
+安装依赖：
+yum -y install gcc kernel-devel kernel-headers
+yum -y install perl perl-libs
+yum -y install flex libxslt libxslt-devel
+
+下载软件：
+
+
+wget http://www.drbd.org/download/drbd/8.4/archive/drbd-8.4.4.tar.gz
+
+tar -zxf drbd-8.4.4.tar.gz
+cd drbd-8.4.4
+./configure --prefix=/usr/local/drbd --with-km
+make KDIR=/usr/src/kernels/`uname -r`/
+make install
+cd drbd
+make clean
+make KDIR=/usr/src/kernels/`uname -r`/
+cp drbd.ko /lib/modules/`uname -r`/kernel/lib/
+modprobe drbd
+lsmod |grep drbd
+
+配置文件：
+配置文件1
+vim /usr/local/drbd/etc/drbd.conf 
+
+# You can find an example in  /usr/share/doc/drbd.../drbd.conf.example
+include "drbd.d/global_common.conf";
+include "drbd.d/*.res";
+
+
+#配置文件2
+vim /usr/local/drbd/etc/drbd.d/global_common.conf
+
+global {
+        usage-count yes;                         # 是否参加DRBD使用者统计.默认是yes
+        # minor-count dialog-refresh disable-ip-verification
+}
+common {
+        #handlers {
+         #       pri-on-incon-degr "/usr/local/drbd/lib/drbd/notify-pri-on-incon-degr.sh; /usr/local/drbd/lib/drbd/notify-emergency-reboot.sh; echo b > /proc/sysrq-trigger ; reboot -f";
+          #      pri-lost-after-sb "/usr/local/drbd/lib/drbd/notify-pri-lost-after-sb.sh; /usr/local/drbd/lib/drbd/notify-emergency-reboot.sh; echo b > /proc/sysrq-trigger ; reboot -f";
+          #      local-io-error "/usr/local/drbd/lib/drbd/notify-io-error.sh; /usr/local/drbd/lib/drbd/notify-emergency-shutdown.sh; echo o > /proc/sysrq-trigger ; halt -f";
+        #}
+        startup {
+                wfc-timeout 30;
+                degr-wfc-timeout 30;
+                outdated-wfc-timeout 30;
+        }
+        options {
+                # cpu-mask on-no-data-accessible
+        }
+        disk {
+                on-io-error detach;
+                fencing resource-and-stonith;
+                resync-rate 50M;                 # 设置主备节点同步时的网络速率最大值,单位是字节.
+        }
+        net {
+                protocol C;                 # 使用协议C.表示收到远程主机的写入确认后,则认为写入完成.
+                cram-hmac-alg sha1;                  # 设置主备机之间通信使用的信息算法.
+                shared-secret "123456";
+        }
+}
+
+#配置文件3
+vim /usr/local/drbd/etc/drbd.d/mydrbd.res 
+resource mydrbd {  
+  
+    on slave130 {  
+  
+        device /dev/drbd0;  
+  
+        disk /dev/sdb1;  
+  
+        address 192.168.79.130:7789;  
+  
+        meta-disk internal;  
+  
+    }  
+  
+    on slave131 {  
+  
+        device /dev/drbd0;  
+  
+        disk /dev/sdb1;  
+  
+        address 192.168.79.131:7789;  
+  
+        meta-disk internal;  
+  
+    }  
+  
+}
+
+初始化：
+dd if=/dev/zero of=/dev/sdb1 bs=1M count=100
+drbdadm create-md mydrbd
+查看状态
+cat /proc/drbd
+启动主（在需要设置为主的节点上执行）：
+drbdadm -- --overwrite-data-of-peer primary mydrbd
+cat /proc/drbd
+等待同步完成
+
+格式化文件与挂载：
+mke2fs -j /dev/drbd0
+mkdir /drbd
+mount /dev/drbd0 /drbd/
